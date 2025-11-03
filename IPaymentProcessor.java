@@ -1,93 +1,33 @@
-package lab8;
-
-public interface IPaymentProcessor
-{
-    void ProcessPayment(double amount);
-    void RefundPayment(double amount);
+package home8;
+interface IPaymentProcessor {
+    double ProcessPayment(double amount);
 }
-class InternalPaymentProcessor implements IPaymentProcessor{
-    public void ProcessPayment(double amount){
-        System.out.println("Processing payment of "+amount +" via internal system.");
-    }
-
-    public void RefundPayment(double amount){
-        System.out.println("Refunding payment of "+amount +" via internal system.");
+class PayPalPaymentProcessor implements IPaymentProcessor{
+    public double ProcessPayment(double amount) {
+        return amount;
     }
 }
-
-class ExternalPaymentSystemA{
-    public void MakePayment(double amount)
-    {
-        System.out.println("Making payment of "+amount +" via External Payment System A.");
-    }
-
-    public void MakeRefund(double amount)
-    {
-        System.out.println("Making refund of "+amount +" via External Payment System A.");
+class StripePaymentService{
+    double MakeTransaction(double totalAmount){
+        return totalAmount;
     }
 }
+class StripePaymentAdapter implements IPaymentProcessor{
+    StripePaymentService service;
 
-
-
-class ExternalPaymentSystemB {
-    public void SendPayment(double amount)
-    {
-        System.out.println("Sending payment of "+amount+ " via External Payment System B.");
+    public StripePaymentAdapter(StripePaymentService service) {
+        this.service = service;
     }
 
-    public void ProcessRefund(double amount)
-    {
-        System.out.println("Processing refund of "+amount+" via External Payment System B.");
+    public double ProcessPayment(double amount) {
+        return service.MakeTransaction(amount);
     }
 }
-class PaymentAdapterA implements IPaymentProcessor {
-    private ExternalPaymentSystemA _externalSystemA;
-
-    public PaymentAdapterA(ExternalPaymentSystemA externalSystemA) {
-        _externalSystemA = externalSystemA;
-    }
-
-    public void ProcessPayment(double amount){
-        _externalSystemA.MakePayment(amount);
-    }
-
-    public void RefundPayment(double amount) {
-        _externalSystemA.MakeRefund(amount);
-    }
-}
-
-class PaymentAdapterB implements IPaymentProcessor {
-    private ExternalPaymentSystemB _externalSystemB;
-
-    public PaymentAdapterB(ExternalPaymentSystemB externalSystemB){
-        _externalSystemB = externalSystemB;
-    }
-
-    public void ProcessPayment(double amount){
-        _externalSystemB.SendPayment(amount);
-    }
-
-    public void RefundPayment(double amount){
-        _externalSystemB.ProcessRefund(amount);
-    }
-}
-
-
-class Main2
-{
+class Main{
     public static void main(String[] args) {
-        IPaymentProcessor internalProcessor = new InternalPaymentProcessor();
-        internalProcessor.ProcessPayment(100.0);
-        internalProcessor.RefundPayment(50.0);
-
-        ExternalPaymentSystemA externalSystemA = new ExternalPaymentSystemA();
-        IPaymentProcessor adapterA = new PaymentAdapterA(externalSystemA);
-        adapterA.ProcessPayment(200.0);
-        adapterA.RefundPayment(100.0);
-
-        ExternalPaymentSystemB externalSystemB = new ExternalPaymentSystemB();
-        IPaymentProcessor adapterB = new PaymentAdapterB(externalSystemB);
-        adapterB.ProcessPayment(300.0);
-        adapterB.RefundPayment(150.0);
+        IPaymentProcessor processor1 = new PayPalPaymentProcessor();
+        IPaymentProcessor processor2 = new StripePaymentAdapter(new StripePaymentService());
+        System.out.println("paypal: "+processor1.ProcessPayment(25.3));
+        System.out.println("stripepay: "+processor2.ProcessPayment(56.1));
     }
 }
